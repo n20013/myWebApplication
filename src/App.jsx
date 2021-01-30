@@ -1,110 +1,54 @@
 import React from 'react'
 import './App.css'
 
-class MoneyBook extends React.Component {
+const TitleView = props => <h1>{props.children}</h1>
+const LoadingView = props => <h1>{props.text}</h1>
+const InitialView = props => props.state.loading
+  ? <LoadingView text='Now Loading...' />
+  : <MainView value={props.state.value} onChange={props.onChange} />
+
+class App extends React.Component {
   constructor (props) {
     super(props)
     this.state = {
-      books: []
+      loading: true,
+      value: null
     }
-    this.URI = 'http://localhost:8080/budget.json'
+    this.handleUpdate = this.handleUpdate.bind(this)
   }
 
   componentDidMount () {
-    window
-      .fetch(this.URI)
-      .then(res => res.json())
-      .then(books => this.setState({ books }))
+    this.setState({ value: "Let's enter your words!", loading: false })
   }
 
   render () {
-    const books = this.state.books
-    if (!books.length) return <div>Now Loading...</div>
-    return (
-      <>
-        <h1>MoneyBook</h1>
-        <TableView books={books} />
-        <EntryView />
-      </>
-    )
+    console.log(this.state)
+    return <InitialView state={this.state} onChange={this.handleUpdate} />
+  }
+
+  handleUpdate (event) {
+    const value = event.target.value
+    this.setState({ value: value })
   }
 }
 
-const TableView = props => {
-  const { books } = props
-  const headings = ['date', 'item', 'income', 'expenses']
+const MainView = props => {
+  console.log('mainview', props)
   return (
-    <table className='book'>
-      <MatrixHeader headings={headings} />
-      <MatrixBody books={books} />
-    </table>
+    <>
+      <TitleView>-TYPEWRITER-</TitleView>
+      <TestForm onChange={props.onChange} />
+      <TestView value={props.value} />
+    </>
   )
 }
 
-const MatrixHeader = props => (
-  <thead data-type='ok'>
-    <tr>
-      {props.headings.map(heading => (
-        <th key={heading}>{heading}</th>
-      ))}
-    </tr>
-  </thead>
-)
-
-const MatrixBody = props => (
-  <tbody>
-    {props.books.map(book => (
-      <BookItem book={book} key={book.date + book.item} />
-    ))}
-  </tbody>
-)
-
-const BookItem = props => {
-  const { date, item, amount } = props.book
-  const isNegative = amount => amount < 0
-  return (
-    <tr>
-      <td>{date}</td>
-      <td>{item}</td>
-      <td>{isNegative(amount) ? null : amount}</td>
-      <td>{isNegative(amount) ? Math.abs(amount) : null}</td>
-    </tr>
-  )
+const TestForm = props => {
+  return <input type='text' onChange={props.onChange} />
 }
 
-class EntryView extends React.Component {
-  render () {
-    return (
-      <div className='entry'>
-        <fieldset>
-          <legend>記帳</legend>
-          <fieldset>
-            <legend>入出金</legend>
-            <label>
-              <input type='radio' value='on' name='cash' />
-              入金
-            </label>
-            <label>
-              <input type='radio' value='off' name='cash' />
-              出金
-            </label>
-          </fieldset>
-          <label className='box'>
-            日付
-            <input type='text' />
-          </label>
-          <label className='box'>
-            項目
-            <input type='text' />
-          </label>
-          <label className='box'>
-            金額
-            <input type='text' />
-          </label>
-          <button>追加</button>
-        </fieldset>
-      </div>
-    )
-  }
+const TestView = props => {
+  return <div>{props.value}</div>
 }
-export default MoneyBook
+
+export default App
